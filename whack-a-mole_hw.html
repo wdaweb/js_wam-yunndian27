@@ -62,24 +62,24 @@
         }
 
         .row {
-            display: inline-block;
+            display: block;
             text-align: center;
             font-size: 0;
         }
 
         .cubes {
-            width: 80px;
-            height: 100px;
+            width: 9%;
+            height: 9%;
             font-size: 1rem;
             border: 1px solid rgb(255, 255, 255, 0.3);
             display: inline-block;
             text-align: center;
             line-height: 100px;
-            color: rgb(255, 255, 255, 0.3);
-            background: rgb(255, 255, 255, 0.1);
+            color: rgb(255, 255, 255, 0.7);
+            background: rgb(255, 255, 255, 0.3);
         }
 
-        .black {
+        .mosquito {
             /* background: #000; */
             background-image: url(./images/mosquito.gif);
             background-size: 100% 100%;
@@ -87,9 +87,27 @@
 
         }
 
-        .red {
+        .blood {
             /* background: red; */
             background-image: url(./images/blood.png);
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+        }
+
+        .cockroach {
+            background-image: url(./images/cockroach.gif);
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+        }
+
+        .bee {
+            background-image: url(./images/bee.gif);
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+        }
+
+        .game-over {
+            background-image: url(./images/gameover.jpg);
             background-size: 100% 100%;
             background-repeat: no-repeat;
         }
@@ -108,6 +126,15 @@
         .text-align {
             text-align: left;
         }
+
+        #game {
+            cursor: url(./images/kill.png), auto;
+        }
+
+        .active {
+            background: url(./images/slippers.png) no-repeat;
+            background-position: 40% 50%;
+        }
     </style>
 </head>
 
@@ -122,40 +149,36 @@
         </header>
         <div id="game">
             <div class="row">
-                <div class="cubes" id="cube-q">Q</div>
-                <div class="cubes" id="cube-w">W</div>
-                <div class="cubes" id="cube-e">E</div>
-                <div class="cubes" id="cube-r">R</div>
-                <div class="cubes" id="cube-t">T</div>
-                <div class="cubes" id="cube-y">Y</div>
-                <div class="cubes" id="cube-u">U</div>
-                <div class="cubes" id="cube-i">I</div>
-                <div class="cubes" id="cube-o">O</div>
-                <div class="cubes" id="cube-p">P</div>
+                <div class="cubes" id="cubeq">Q</div>
+                <div class="cubes" id="cubew">W</div>
+                <div class="cubes" id="cubee">E</div>
+                <div class="cubes" id="cuber">R</div>
+                <div class="cubes" id="cubet">T</div>
+                <div class="cubes" id="cubey">Y</div>
+                <div class="cubes" id="cubeu">U</div>
+                <div class="cubes" id="cubei">I</div>
+                <div class="cubes" id="cubeo">O</div>
+                <div class="cubes" id="cubep">P</div>
             </div>
             <div class="row">
-                <div class="cubes" id="cube-a">A</div>
-                <div class="cubes" id="cube-s">S</div>
-                <div class="cubes" id="cube-d">D</div>
-                <div class="cubes" id="cube-f">F</div>
-                <div class="cubes" id="cube-g">G</div>
-                <div class="cubes" id="cube-h">H</div>
-                <div class="cubes" id="cube-j">J</div>
-                <div class="cubes" id="cube-k">K</div>
-                <div class="cubes" id="cube-l">L</div>
-                <!-- <div class="cubes" id="cube-sp">;</div> -->
+                <div class="cubes" id="cubea">A</div>
+                <div class="cubes" id="cubes">S</div>
+                <div class="cubes" id="cubed">D</div>
+                <div class="cubes" id="cubef">F</div>
+                <div class="cubes" id="cubeg">G</div>
+                <div class="cubes" id="cubeh">H</div>
+                <div class="cubes" id="cubej">J</div>
+                <div class="cubes" id="cubek">K</div>
+                <div class="cubes" id="cubel">L</div>
             </div>
             <div class="row">
-                <div class="cubes" id="cube-z">Z</div>
-                <div class="cubes" id="cube-x">X</div>
-                <div class="cubes" id="cube-c">C</div>
-                <div class="cubes" id="cube-v">V</div>
-                <div class="cubes" id="cube-b">B</div>
-                <div class="cubes" id="cube-n">N</div>
-                <div class="cubes" id="cube-m">M</div>
-                <!-- <div class="cubes" id="cube-co">,</div>
-                <div class="cubes" id="cube-do">.</div>
-                <div class="cubes" id="cube-li">/</div> -->
+                <div class="cubes" id="cubez">Z</div>
+                <div class="cubes" id="cubex">X</div>
+                <div class="cubes" id="cubec">C</div>
+                <div class="cubes" id="cubev">V</div>
+                <div class="cubes" id="cubeb">B</div>
+                <div class="cubes" id="cuben">N</div>
+                <div class="cubes" id="cubem">M</div>
             </div>
         </div>
         <div id="record">
@@ -168,6 +191,7 @@
 
     <!-- js -->
     <script>
+        const wrapper = document.getElementById('wrapper')
         const btnStart = document.getElementById('btn-start')
         const cubes = document.getElementsByClassName('cubes')
         const textScore = document.getElementById('text-score')
@@ -182,7 +206,10 @@
         btnStart.onclick = () => {
             btnStart.disabled = true
             score = 0
+            textScore.innerText = score
+
             countdown = 10
+            textCountdown.innerText = countdown
 
             timer = setInterval(game, 1000)
             game()
@@ -190,37 +217,83 @@
 
         const game = () => {
             for (const cube of cubes) {
-                cube.classList.remove('black')
-                cube.classList.remove('red')
+                cube.classList.remove('mosquito')
+                cube.classList.remove('blood')
+                cube.classList.remove('cockroach')
+                cube.classList.remove('bee')
             }
-            for (let i = 0; i < 3; i++) {
+
+            for (let i = 0; i < 1; i++) {
                 const random = Math.floor(Math.random() * 26)
-                cubes[random].classList.add('black')
+                cubes[random].classList.add('cockroach')
+                for (let j = 0; j < 1; j++) {
+                    const random = Math.floor(Math.random() * 26)
+                    cubes[random].classList.add('bee')
+                    for (let k = 0; k < 3; k++) {
+                        const random = Math.floor(Math.random() * 26)
+                        cubes[random].classList.add('mosquito')
+                    }
+                }
             }
+
+
+
             countdown--
             textCountdown.innerText = countdown
+
             if (countdown <= 0) {
                 clearInterval(timer)
+                alert(`Game Over \n花了${countdown + 10}秒\n你得到 ${score} 分`)
+                btnStart.disabled = false
+                for (const cube of cubes) {
+                    cube.classList.remove('mosquito')
+                    cube.classList.remove('blood')
+                    cube.classList.remove('cockroach')
+                    cube.classList.remove('bee')
+                    cube.classList.remove('game-over')
+                }
             }
         }
 
         for (const cube of cubes) {
             cube.onclick = () => {
-                if (cube.classList.contains('black')) {
-                    cube.classList.replace('black', 'red')
+                if (cube.classList.contains('mosquito')) {
+                    cube.classList.replace('mosquito', 'blood')
                     score++
                     textScore.innerText = score
+                }
+                else if (cube.classList.contains('cockroach')) {
+                    cube.classList.replace('cockroach', 'blood')
+                    score += 2
+                    textScore.innerText = score
+                    countdown++
+                    textCountdown.innerText = countdown++
+                }
+                else if (cube.classList.contains('bee')) {
+                    cube.classList.replace('bee', 'game-over')
+                    countdown -= 10
+                    textCountdown.innerText = countdown
                 }
             }
         }
 
         document.onkeydown = (event) => {
-            if (!isNaN(event.key) && event.code.includes('Numpad')) {
+            if (event.code.includes('Key')) {
                 const target = document.getElementById(`cube${event.key}`)
-                if (target !== null && target.classList.contains('black')) {
-                    target.classList.remove('black', 'red')
+                console.log(target)
+                if (target.classList.contains('mosquito')) {
+                    target.classList.replace('mosquito', 'blood')
                     score++
                     textScore.innerText = score
+                } else if (target.classList.contains('cockroach')) {
+                    target.classList.replace('cockroach', 'blood')
+                    score++
+                    textScore.innerText = score
+                } else if (target.classList.contains('bee')) {
+                    target.classList.replace('bee', 'game-over')
+                    countdown -= 10
+                    textCountdown.innerText = countdown
+                    wrapper.style.background = 'linear-gradient(0deg, #222, #888)'
                 }
             }
         }
