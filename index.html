@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>打地鼠|作業</title>
+    <title>打地鼠 | 作業</title>
     <style>
         * {
             margin: 0;
@@ -19,18 +19,27 @@
             width: 100%;
         }
 
-        body {
-            /* background: linear-gradient(0deg, #222, #888); */
-            background-image: url(./images/room.jpg);
-            background-repeat: no-repeat;
-            background-size: cover;
-        }
-
         #wrapper {
             width: 100%;
             height: 100%;
             position: relative;
-            /* background-image: url(./images/room.jpg); */
+            overflow: hidden;
+            background: linear-gradient(0deg, #FFEFD5, #A0522D);
+            /* background-image: url(./images/room2.jpg);
+            opacity: 1;
+            background-repeat: no-repeat;
+            background-size: 100% 100%; */
+        }
+
+        .bg {
+            width: 100%;
+            height: 100%;
+            background-image: url(./images/room2.jpg);
+            opacity: 1;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            opacity: 0.8;
+            filter: blur(2px);
         }
 
         #header {
@@ -41,17 +50,18 @@
 
             position: absolute;
             left: 50%;
-            top: 8%;
+            top: 5%;
             transform: translateX(-50%);
         }
 
         h1 {
             color: #fff;
-            /* text-shadow: 0 0 4px rgb(238, 238, 140); */
+            text-shadow: 0 0 7px rgb(124, 52, 4);
+            font-size: 52px;
         }
 
         #game {
-            width: 70%;
+            width: 90%;
             display: inline-block;
             text-align: center;
 
@@ -69,7 +79,7 @@
 
         .cubes {
             width: 9%;
-            height: 9%;
+            height: 100px;
             font-size: 1rem;
             border: 1px solid rgb(255, 255, 255, 0.3);
             display: inline-block;
@@ -77,6 +87,7 @@
             line-height: 100px;
             color: rgb(255, 255, 255, 0.7);
             background: rgb(255, 255, 255, 0.3);
+            /* box-shadow: 0 0 3px rgb(124, 52, 4); */
         }
 
         .mosquito {
@@ -118,7 +129,7 @@
             color: #FFF;
 
             position: absolute;
-            top: 80%;
+            bottom: 7%;
             left: 50%;
             transform: translateX(-50%);
         }
@@ -131,22 +142,60 @@
             cursor: url(./images/kill.png), auto;
         }
 
-        .active {
-            background: url(./images/slippers.png) no-repeat;
-            background-position: 40% 50%;
+        .rec p {
+            /* border: 1px solid #333; */
+            display: inline-block;
+            text-shadow: 0 0 5px rgb(124, 52, 4);
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+
+        .rec p:nth-child(1) {
+            padding-right: 15px;
+        }
+
+        #btn-info {
+            position: absolute;
+            top: 115%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        #btn-start {
+            margin: 10px 0;
+            padding: 3px 20px;
+            border-radius: 10px;
+            border: 0;
+            background: orangered;
+            color: #fff;
+            line-height: 1.5rem;
+            box-shadow: 0 0 5px rgb(0, 0, 0);
+        }
+
+        #btn-start:disabled {
+            background: brown;
         }
     </style>
 </head>
 
 <body>
+    <!-- 版型 -->
     <div id="wrapper">
+        <div class="bg"></div>
         <header id="header">
             <div>
-                <h1>打蚊子</h1>
+                <h1>夏日練打字</h1>
             </div>
-            <div>倒數 <span id="text-countdown">10</span> 秒</div>
-            <p>目前分數 <span id="text-score">0</span> 分</p>
+            <div class="rec">
+                <p>倒數 <span id="text-countdown">0</span> 秒</p>
+                <p>目前分數 <span id="text-score">0</span> 分</p>
+                <!-- <div>
+                    <p>兩種遊戲方式: 1.用你的滑鼠電擊框框 2.使用鍵盤點擊對應的框框</p>
+                </div> -->
+            </div>
+            <input type="button" value="遊戲說明" id="btn-info">
         </header>
+
         <div id="game">
             <div class="row">
                 <div class="cubes" id="cubeq">Q</div>
@@ -181,11 +230,12 @@
                 <div class="cubes" id="cubem">M</div>
             </div>
         </div>
+
         <div id="record">
             <input type="button" value="開始遊戲" id="btn-start">
             <p>最高紀錄</p>
-            <p class="text-align">玩家: <span id="highscorePlayer">-</span> </p>
-            <p class="text-align">分數: <span id="highscore">-</span></p>
+            <p class="text-align">玩家: <span id="highscore-player">-</span> </p>
+            <p class="text-align">分數: <span id="highscore-score">-</span></p>
         </div>
     </div>
 
@@ -195,13 +245,24 @@
         const btnStart = document.getElementById('btn-start')
         const cubes = document.getElementsByClassName('cubes')
         const textScore = document.getElementById('text-score')
-        const highscorePlayer = document.getElementById('highscorePlayer')
-        const highscore = document.getElementById('highscore')
+        const textHighscorePlayer = document.getElementById('highscore-player')
+        const textHighscore = document.getElementById('highscore-score')
         const textCountdown = document.getElementById('text-countdown')
 
         let score = 0
         let timer = 0
         let countdown = 10
+        let highscore = { name: '', score: 0 }
+
+
+
+        const highStorage = JSON.parse(localStorage.getItem('wam'))
+        if (highStorage !== null) {
+            highscore = highStorage
+            textHighscorePlayer.innerText = highscore.name
+            textHighscore.innerText = highscore.score
+        }
+
 
         btnStart.onclick = () => {
             btnStart.disabled = true
@@ -221,6 +282,8 @@
                 cube.classList.remove('blood')
                 cube.classList.remove('cockroach')
                 cube.classList.remove('bee')
+                cube.classList.remove('game-over')
+                cube.style.boxShadow = '0 0 0 rgb(124, 52, 4)'
             }
 
             for (let i = 0; i < 1; i++) {
@@ -236,14 +299,16 @@
                 }
             }
 
-
-
+            countdown
             countdown--
             textCountdown.innerText = countdown
 
+
+
             if (countdown <= 0) {
                 clearInterval(timer)
-                alert(`Game Over \n花了${countdown + 10}秒\n你得到 ${score} 分`)
+                alert(`遊戲結束\n你得到 ${score} 分`)
+
                 btnStart.disabled = false
                 for (const cube of cubes) {
                     cube.classList.remove('mosquito')
@@ -251,49 +316,75 @@
                     cube.classList.remove('cockroach')
                     cube.classList.remove('bee')
                     cube.classList.remove('game-over')
+                    cube.style.boxShadow = '0 0 0 rgb(124, 52, 4)'
+                }
+
+                if (score > highscore.score) {
+                    highscore.score = score
+                    highscore.name = prompt('最高分! 請輸入名子')
+                    if (highscore.name === null || highscore.name.length === 0) {
+                        highscore.name = '路人'
+                    }
+                    textHighscorePlayer.innerText = highscore.name
+                    textHighscore.innerText = highscore.score
+                    localStorage.setItem('wam', JSON.stringify(highscore))
                 }
             }
         }
 
         for (const cube of cubes) {
             cube.onclick = () => {
+                cube.style.boxShadow = '0 0 10px rgb(200, 200, 4)'
+
                 if (cube.classList.contains('mosquito')) {
                     cube.classList.replace('mosquito', 'blood')
                     score++
                     textScore.innerText = score
                 }
-                else if (cube.classList.contains('cockroach')) {
+
+                if (cube.classList.contains('cockroach')) {
                     cube.classList.replace('cockroach', 'blood')
                     score += 2
                     textScore.innerText = score
                     countdown++
-                    textCountdown.innerText = countdown++
-                }
-                else if (cube.classList.contains('bee')) {
-                    cube.classList.replace('bee', 'game-over')
-                    countdown -= 10
                     textCountdown.innerText = countdown
+                }
+
+                if (cube.classList.contains('bee')) {
+                    cube.classList.replace('bee', 'game-over')
+                    countdown = 1
                 }
             }
         }
 
         document.onkeydown = (event) => {
+            if (event.code.includes('Space')) {
+                btnStart.click()
+            }
+
             if (event.code.includes('Key')) {
+
+                // 英文小寫判斷
                 const target = document.getElementById(`cube${event.key}`)
                 console.log(target)
+
+
+                target.style.boxShadow = '0 0 15px rgb(200, 200, 4)'
+
                 if (target.classList.contains('mosquito')) {
+
                     target.classList.replace('mosquito', 'blood')
                     score++
                     textScore.innerText = score
                 } else if (target.classList.contains('cockroach')) {
                     target.classList.replace('cockroach', 'blood')
-                    score++
+                    score += 2
                     textScore.innerText = score
+                    countdown++
+                    textCountdown.innerText = countdown
                 } else if (target.classList.contains('bee')) {
                     target.classList.replace('bee', 'game-over')
-                    countdown -= 10
-                    textCountdown.innerText = countdown
-                    wrapper.style.background = 'linear-gradient(0deg, #222, #888)'
+                    countdown = 1
                 }
             }
         }
