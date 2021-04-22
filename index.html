@@ -25,6 +25,21 @@
             font-family: 'Noto Sans TC', sans-serif;
         }
 
+        #loading {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            background-color: rgb(0, 0, 0, 0.8);
+            z-index: 9999;
+        }
+
+        #loading img {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
         #wrapper {
             width: 100vw;
             height: 100vh;
@@ -225,6 +240,7 @@
             z-index: 999;
 
             /* display: none; */
+            visibility: hidden;
         }
 
         .mask-info {
@@ -267,24 +283,14 @@
 </head>
 
 <body>
+    <div id="loading">
+        <img src="./cat.svg">
+    </div>
     <!-- 版型 -->
     <div id="wrapper">
-        <div id="mask">
-            <div class="mask-info">
-                <div>
-                    <i id="btn-mask" class=" fas fa-times-circle fa-2x"></i>
-                </div>
-                <h3> &mdash; &mdash; &mdash; 遊戲說明 &mdash; &mdash; &mdash; <br></h3>
-                打蟲子有兩種方式！<br>
-                1. 使用滑鼠，點擊框格內的蟲子<br>
-                2. 使用鍵盤，對照框格內的英文，電擊各種蟲子<br><br>
-                <h3> &mdash; &mdash; &mdash; 計分說明 &mdash; &mdash; &mdash; <br></h3>
-                <img src="./images/mosquito.gif">小蚊：加一分<br>
-                <img src="./images/cockroach.gif">小強：加兩分，並多一秒<br>
-                <img src="./images/bee.gif">小蜂：被螫傷，直接結束遊戲，小心別點到！！<br>
-            </div>
-        </div>
+        <!-- 背景 -->
         <div class="bg"></div>
+        <!-- 標題 -->
         <header id="header">
             <div>
                 <h1>夏日練打<span>蟲</span>子</h1>
@@ -295,7 +301,7 @@
             </div>
             <input type="button" value="遊戲說明" id="btn-info">
         </header>
-
+        <!-- 遊戲區 -->
         <div id="game">
             <div class="row">
                 <div class="cubes" id="cubeq">Q</div>
@@ -330,18 +336,33 @@
                 <div class="cubes" id="cubem">M</div>
             </div>
         </div>
-
+        <!-- 計分區 -->
         <div id="record">
             <input type="button" value="開始遊戲" id="btn-start">
             <p>&diams; &diams; &diams; <span>最高紀錄</span> &diams; &diams; &diams;</p>
             <p>玩家: <span id="highscore-player">---</span> </p>
             <p>分數: <span id="highscore-score">--</span></p>
         </div>
-
-
+        <!-- 遊戲說明 -->
+        <div id="mask">
+            <div class="mask-info">
+                <div>
+                    <i id="btn-mask" class=" fas fa-times-circle fa-2x"></i>
+                </div>
+                <h3> &mdash; &mdash; &mdash; 遊戲說明 &mdash; &mdash; &mdash; <br></h3>
+                打蟲子有兩種方式！<br>
+                1. 使用滑鼠，點擊框格內的蟲子<br>
+                2. 使用鍵盤，對照框格內的英文，電擊各種蟲子<br><br>
+                <h3> &mdash; &mdash; &mdash; 計分說明 &mdash; &mdash; &mdash; <br></h3>
+                <img src="./images/mosquito.gif">小蚊：加一分<br>
+                <img src="./images/cockroach.gif">小強：加兩分，並多一秒<br>
+                <img src="./images/bee.gif">小蜂：被螫傷，直接結束遊戲，小心別點到！！<br>
+            </div>
+        </div>
     </div>
 
     <!-- js -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script>
         const wrapper = document.getElementById('wrapper')
         const btnStart = document.getElementById('btn-start')
@@ -353,14 +374,25 @@
         const btnInfo = document.getElementById('btn-info')
         const btnMask = document.getElementById('btn-mask')
         const mask = document.getElementById('mask')
+        const loading = document.getElementById('loading')
+
+        // loading
+        document.onreadystatechange = () => {
+            if (document.readyState === 'complete') {
+                loading.style.display = 'none'
+            }
+        }
+
+        // music
+        const audio = new Audio()
+        audio.src = './win.mp3'
 
         let score = 0
         let timer = 0
         let countdown = 10
         let highscore = { name: '', score: 0 }
 
-
-
+        // score
         const highStorage = JSON.parse(localStorage.getItem('wam'))
         if (highStorage !== null) {
             highscore = highStorage
@@ -368,9 +400,15 @@
             textHighscore.innerText = highscore.score
         }
 
+        btnInfo.onclick = () => {
+            btnInfo.disabled = false
+            mask.style.visibility = 'visible'
+        }
+
         btnMask.onclick = () => {
             btnMask.disabled = true
-            mask.style.display = 'none'
+            // mask.style.display = 'none'
+            mask.style.visibility = 'hidden'
         }
 
 
@@ -393,7 +431,7 @@
                 cube.classList.remove('cockroach')
                 cube.classList.remove('bee')
                 cube.classList.remove('game-over')
-                cube.style.boxShadow = '0 0 0 rgb(124, 52, 4)'
+                cube.style.boxShadow = "0 0 0 #fff"
             }
 
             for (let i = 0; i < 1; i++) {
@@ -409,7 +447,6 @@
                 }
             }
 
-            countdown
             countdown--
             textCountdown.innerText = countdown
 
@@ -417,7 +454,12 @@
 
             if (countdown <= 0) {
                 clearInterval(timer)
-                alert(`遊戲結束\n你得到 ${score} 分`)
+                // alert(`遊戲結束\n你得到 ${score} 分`)
+                Swal.fire(
+                    '遊戲結束',
+                    `你得到 ${score} 分`,
+                    'success'
+                )
 
                 btnStart.disabled = false
                 for (const cube of cubes) {
@@ -430,8 +472,9 @@
                 }
 
                 if (score > highscore.score) {
+                    audio.play()
                     highscore.score = score
-                    highscore.name = prompt('最高分! 請輸入名子')
+                    highscore.name = prompt('你獲得最高分! \n請留下你的名字，印下輝煌紀錄吧！')
                     if (highscore.name === null || highscore.name.length === 0) {
                         highscore.name = '路人'
                     }
@@ -444,7 +487,7 @@
 
         for (const cube of cubes) {
             cube.onclick = () => {
-                cube.style.boxShadow = '0 0 10px rgb(200, 200, 4)'
+                cube.style.boxShadow = "0 0 10px rgb(200, 200, 4)"
 
                 if (cube.classList.contains('mosquito')) {
                     cube.classList.replace('mosquito', 'blood')
@@ -478,8 +521,7 @@
                 const target = document.getElementById(`cube${event.key}`)
                 console.log(target)
 
-
-                target.style.boxShadow = '0 0 15px rgb(200, 200, 4)'
+                target.style.boxShadow = "0 0 18px rgb(250, 250, 4)"
 
                 if (target.classList.contains('mosquito')) {
 
