@@ -518,7 +518,7 @@
             if (event.code.includes('Key')) {
 
                 // 英文小寫判斷
-                const target = document.getElementById(`cube${event.key}`)
+                const target = document.getElementById(`cube${event.key.toLowerCase()}`)
                 console.log(target)
 
                 target.style.boxShadow = "0 0 18px rgb(250, 250, 4)"
